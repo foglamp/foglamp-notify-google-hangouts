@@ -28,8 +28,8 @@
 set -e
 
 set_files_ownership () {
-    chown -R root:root /usr/local/foglamp/plugins/notificationDelivery/hangouts
+    chown -R root:root /usr/local/foglamp/plugins/notificationDelivery/Hangouts
 }
 
 set_files_ownership
-echo "Slack notify plugin is installed"
+echo "Google-Hangout notify plugin is installed"
