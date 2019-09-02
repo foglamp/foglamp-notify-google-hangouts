@@ -86,10 +86,27 @@ SimpleHttps	*https;
 		https  = new SimpleHttps(hostAndPort);
 	}
 
-	int errorCode;
-	if ((errorCode = https->sendRequest("POST", m_url, headers, payload.str())) != 200 && errorCode == 202)
+	try
 	{
-		Logger::getLogger()->error("Failed to send notification to hangouts webhook  %s, errorCode %d", m_url.c_str(), errorCode);
+		int errorCode;
+		if ((errorCode = https->sendRequest("POST",
+						    m_url,
+						    headers,
+						    payload.str())) != 200 &&
+		    errorCode == 202)
+		{
+			Logger::getLogger()->error("Failed to send notification to "
+						   "hangouts webhook %s, errorCode %d",
+						   m_url.c_str(),
+						   errorCode);
+		}
+	}
+	catch (exception &e)
+	{
+		Logger::getLogger()->error("Exception while sending notification "
+					   "to hangouts webhook %s: %s",
+					    m_url.c_str(),
+					    e.what());
 	}
 	delete https;
 }
