@@ -44,7 +44,7 @@ Hangouts::~Hangouts()
 void Hangouts::notify(const string& notificationName, const string& triggerReason, const string& message)
 {
 ostringstream   payload;
-SimpleHttps	*https;
+SimpleHttps	*https = NULL;
 
 
 	payload << "{ \"text\" : \"";
@@ -63,31 +63,38 @@ SimpleHttps	*https;
 	pair<string, string> header = make_pair("Content-type", "application/json");
 	headers.push_back(header);
 
+	if (m_url.empty())
+	{
+		Logger::getLogger()->error("Hangouts webhook is not set");
+		return;
+	}
+
 	/**
 	 * Extract host and port from URL
 	 */
-	size_t findProtocol = m_url.find_first_of(":");
-	string protocol = m_url.substr(0,findProtocol);
-
-	string tmpUrl = m_url.substr(findProtocol + 3);
-	size_t findPort = tmpUrl.find_first_of(":");
-	size_t findPath = tmpUrl.find_first_of("/");
-	string port, hostName;
-	if (findPort == string::npos)
-	{
-		hostName = tmpUrl.substr(0, findPath);
-		https  = new SimpleHttps(hostName);
-	}
-	else
-	{
-		hostName = tmpUrl.substr(0, findPort);
-		port = tmpUrl.substr(findPort + 1 , findPath - findPort -1);
-		string hostAndPort(hostName + ":" + port);
-		https  = new SimpleHttps(hostAndPort);
-	}
 
 	try
 	{
+		size_t findProtocol = m_url.find_first_of(":");
+		string protocol = m_url.substr(0,findProtocol);
+
+		string tmpUrl = m_url.substr(findProtocol + 3);
+		size_t findPort = tmpUrl.find_first_of(":");
+		size_t findPath = tmpUrl.find_first_of("/");
+		string port, hostName;
+		if (findPort == string::npos)
+		{
+			hostName = tmpUrl.substr(0, findPath);
+			https  = new SimpleHttps(hostName);
+		}
+		else
+		{
+			hostName = tmpUrl.substr(0, findPort);
+			port = tmpUrl.substr(findPort + 1 , findPath - findPort -1);
+			string hostAndPort(hostName + ":" + port);
+			https  = new SimpleHttps(hostAndPort);
+		}
+
 		int errorCode;
 		if ((errorCode = https->sendRequest("POST",
 						    m_url,
@@ -108,7 +115,21 @@ SimpleHttps	*https;
 					    m_url.c_str(),
 					    e.what());
 	}
-	delete https;
+        catch (...)
+	{
+		std::exception_ptr p = std::current_exception();
+		string name = (p ? p.__cxa_exception_type()->name() : "null");
+
+		Logger::getLogger()->error("Generic exception found while sending notification "
+					   "to hangouts webhook  %s: %s",
+					    m_url.c_str(),
+					    name.c_str());
+	}
+
+	if (https)
+	{
+		delete https;
+	}
 }
 
 /**
