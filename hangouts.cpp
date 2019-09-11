@@ -1,5 +1,5 @@
 /*
- * FogLAMP Google hangouts notification delivery plugin.
+ * Fledge Google hangouts notification delivery plugin.
  *
  * Copyright (c) 2019 Dianomic Systems
  *
