@@ -96,6 +96,7 @@ bool plugin_deliver(PLUGIN_HANDLE handle,
 							deliveryName.c_str(), notificationName.c_str(), triggerReason.c_str(), message.c_str());
 	Hangouts *hangouts = (Hangouts *)handle;
 	hangouts->notify(notificationName, triggerReason, message);
+	return true;
 }
 
 /**
